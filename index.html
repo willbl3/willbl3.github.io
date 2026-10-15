@@ -1,0 +1,67 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1">
+<title>William Croteau | Portfolio</title>
+<link rel="stylesheet" href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css">
+<style>
+:root{font:17px/1.65 system-ui,sans-serif;color:#19382f;background:#f5f4ee}*{box-sizing:border-box}body{margin:0}main,nav,footer{max-width:1050px;margin:auto;padding:24px}nav{display:flex;gap:22px;flex-wrap:wrap;border-bottom:1px solid #cbd5cc}a{color:#226348;text-underline-offset:4px}a:hover{color:#112f24}header{padding:70px 0 45px}small,.eyebrow{letter-spacing:.14em;text-transform:uppercase;font-size:.75rem}h1{font:clamp(3rem,9vw,6rem)/1.1 Georgia,serif;margin:16px 0}h2{font:2rem Georgia,serif}h3{font-size:1rem;margin:20px 0 4px}p{margin:8px 0 18px}section{padding:28px 0;border-top:1px solid #cbd5cc}.grid{display:grid;grid-template-columns:repeat(3,1fr);gap:16px}details{background:white;border:1px solid #cbd5cc;border-radius:12px;padding:22px;align-self:start}summary{cursor:pointer;font-weight:650;min-height:55px}summary small{display:block;color:#526d60}details p{font-size:.94rem}.map{height:340px;border-radius:10px;margin-top:14px}iframe{width:100%;height:480px;border:0;border-radius:10px}.note{color:#526d60;font-size:.9rem}a:focus-visible,summary:focus-visible{outline:3px solid #b65c2d;outline-offset:5px}footer{font-size:.85rem}@media(max-width:700px){.grid{grid-template-columns:1fr}header{padding:45px 0}main,nav,footer{padding:20px}.map{height:300px}}
+</style>
+</head>
+<body>
+<nav aria-label="Main navigation"><a href="#about">About</a><a href="#projects">Projects</a><a href="#resume">Resume</a><a href="#contact">Contact</a></nav>
+<main>
+<header><span class="eyebrow">Personal portfolio</span><h1>William Croteau</h1><p>Geographic Information Systems and Technology undergraduate at Texas A&amp;M University.</p></header>
+<section id="about"><h2>About</h2><p>I study Geographic Information Systems and Technology at Texas A&amp;M University. I am proficient in ArcGIS and familiar with Python and Java. My experience includes an IT internship at LivaNova, manufacturing equipment operation, and quality inspections.</p></section>
+<section id="projects"><h2>Selected projects</h2><p class="note">Select a card to explore the work.</p><div class="grid" id="cards"></div></section>
+<section id="resume"><h2>Resume</h2>
+<h3>Education</h3><p>Texas A&amp;M University<br>Undergraduate in Geographic Information Systems and Technology</p>
+<h3>IT Intern - LivaNova</h3><p class="note">Summer internship</p><p>Internship responsibilities and contributions: [ADD]</p>
+<h3>Manufacturing Technician · Hisco</h3><p class="note">Houston, TX · May 2023 – October 2023</p><p>Operated technical equipment to specifications and conducted quality inspections using analytical tools. Read and interpreted work instructions, technical drawings, and blueprints.</p>
+<h3>Skills</h3><p>Proficient: ArcGIS.<br>Other GIS tools and methods: [ADD]<br>Familiar: Python, Java.</p>
+<p class="note">Public resume download link: [ADD]</p></section>
+<section id="contact"><h2>Contact</h2><p><a href="mailto:wacroteau@gmail.com">wacroteau@gmail.com</a><br><a href="mailto:williamcroteau1@tamu.edu">williamcroteau1@tamu.edu</a></p></section>
+</main>
+<footer>William Croteau · Personal portfolio</footer>
+<script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js"></script>
+<script>
+// Facts are from the supplied resume and user corrections. Project facts were not supplied.
+// Add supplied points as {lat: ..., lng: ..., popup: "..."} inside points.
+// Set embed to a supplied ArcGIS Online map or StoryMap URL; otherwise leave blank.
+const projects = [
+  {title:"[ADD]",problem:"[ADD]",did:"[ADD]",found:"[ADD]",differently:"[ADD]",points:[],embed:""},
+  {title:"[ADD]",problem:"[ADD]",did:"[ADD]",found:"[ADD]",differently:"[ADD]",points:[],embed:""},
+  {title:"[ADD]",problem:"[ADD]",did:"[ADD]",found:"[ADD]",differently:"[ADD]",points:[],embed:""}
+];
+const cards=document.getElementById("cards");
+projects.forEach((p,i)=>{
+  const card=document.createElement("details"),summary=document.createElement("summary");
+  const label=document.createElement("small");label.textContent=`Project ${i+1}`;
+  summary.append(label,document.createTextNode(p.title));card.append(summary);
+  [["The problem",p.problem],["What I did",p.did],["What I found",p.found],["What I would do differently",p.differently]].forEach(([title,text])=>{
+    const h=document.createElement("h3"),body=document.createElement("p");h.textContent=title;body.textContent=text;card.append(h,body);
+  });
+  let map;
+  if(p.points.length){
+    const container=document.createElement("div"),status=document.createElement("p");container.className="map";container.setAttribute("aria-label",`Interactive map for project ${i+1}`);status.className="note";card.append(container,status);
+    card.addEventListener("toggle",()=>{
+      if(!card.open)return;
+      if(!window.L){status.textContent="Map could not load. Check your internet connection.";return;}
+      if(!map){
+        map=L.map(container,{scrollWheelZoom:false});
+        L.tileLayer("https://server.arcgisonline.com/ArcGIS/rest/services/World_Topo_Map/MapServer/tile/{z}/{y}/{x}",{attribution:"Tiles © Esri",maxZoom:19}).addTo(map);
+        const markers=p.points.map(point=>{const popup=document.createElement("div");popup.textContent=point.popup;return L.marker([point.lat,point.lng]).bindPopup(popup).addTo(map);});
+        map.fitBounds(L.featureGroup(markers).getBounds(),{padding:[24,24],maxZoom:13});
+      }
+      requestAnimationFrame(()=>map.invalidateSize());
+    });
+  }else{const note=document.createElement("p");note.className="note";note.textContent="Map data: [ADD]";card.append(note);}
+  if(p.embed){
+    try{const url=new URL(p.embed);if(url.protocol==="https:"&&(url.hostname==="arcgis.com"||url.hostname.endsWith(".arcgis.com"))){const frame=document.createElement("iframe");frame.src=url.href;frame.title=`Project ${i+1} ArcGIS map or StoryMap`;frame.loading="lazy";frame.allowFullscreen=true;card.append(frame);}}catch{}
+  }
+  cards.append(card);
+});
+</script>
+</body>
+</html>
