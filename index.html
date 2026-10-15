@@ -10,12 +10,12 @@
 </style>
 </head>
 <body>
-<nav aria-label="Main navigation"><a href="#about">About</a><a href="#projects">Projects</a><a href="#resume">Resume</a><a href="#contact">Contact</a></nav>
+<nav aria-label="Main navigation"><a href="#about">About</a><a href="#projects">Projects</a><a href="#web-map">Map</a><a href="#resume">Resume</a><a href="#contact">Contact</a></nav>
 <main>
 <header><span class="eyebrow">Personal portfolio</span><h1>William Croteau</h1><p>Geographic Information Systems and Technology undergraduate at Texas A&amp;M University.</p></header>
 <section id="about"><h2>About</h2><p>I study Geographic Information Systems and Technology at Texas A&amp;M University. I am proficient in ArcGIS and familiar with Python and Java. My experience includes an IT internship at LivaNova, manufacturing equipment operation, and quality inspections.</p></section>
 <section id="projects"><h2>Selected projects</h2><p class="note">Select a card to explore the work.</p><div class="grid" id="cards"></div></section>
-<section id="resume"><h2>Resume</h2>
+<section id="web-map"><h2>Interactive project map</h2><p class="note">Drag to explore. Use the zoom controls to zoom. Select a project point to view its popup.</p><div id="overview-map" class="map" aria-label="Interactive Esri World Topographic map"></div><p id="map-status" class="note" role="status">Project coordinates and point descriptions: [ADD]. No project locations have been supplied.</p><noscript>Enable JavaScript to use the interactive map.</noscript></section><section id="resume"><h2>Resume</h2>
 <h3>Education</h3><p>Texas A&amp;M University<br>Undergraduate in Geographic Information Systems and Technology</p>
 <h3>IT Intern - LivaNova</h3><p class="note">Summer internship</p><p>Internship responsibilities and contributions: [ADD]</p>
 <h3>Manufacturing Technician · Hisco</h3><p class="note">Houston, TX · May 2023 – October 2023</p><p>Operated technical equipment to specifications and conducted quality inspections using analytical tools. Read and interpreted work instructions, technical drawings, and blueprints.</p>
@@ -34,7 +34,17 @@ const projects = [
   {title:"[ADD]",problem:"[ADD]",did:"[ADD]",found:"[ADD]",differently:"[ADD]",points:[],embed:""},
   {title:"[ADD]",problem:"[ADD]",did:"[ADD]",found:"[ADD]",differently:"[ADD]",points:[],embed:""}
 ];
-const cards=document.getElementById("cards");
+// Coordinates and popup text are stored in each project's points array above.
+if(window.L){
+  const overview=L.map("overview-map",{scrollWheelZoom:false}).fitWorld();
+  const status=document.getElementById("map-status");
+  L.tileLayer("https://server.arcgisonline.com/ArcGIS/rest/services/World_Topo_Map/MapServer/tile/{z}/{y}/{x}",{attribution:"Tiles \u00a9 Esri",maxZoom:19}).addTo(overview).on("tileerror",()=>{status.textContent="Basemap tiles could not load. Check your internet connection.";});
+  const markers=projects.flatMap(project=>project.points.map(point=>{
+    const popup=document.createElement("div");popup.textContent=point.popup;
+    return L.marker([point.lat,point.lng]).bindPopup(popup).addTo(overview);
+  }));
+  if(markers.length){overview.fitBounds(L.featureGroup(markers).getBounds(),{padding:[24,24],maxZoom:13});status.textContent="Select a point to read its project details.";}
+}else{document.getElementById("map-status").textContent="Leaflet could not load from unpkg.com. Connect to the internet and reload this page.";}const cards=document.getElementById("cards");
 projects.forEach((p,i)=>{
   const card=document.createElement("details"),summary=document.createElement("summary");
   const label=document.createElement("small");label.textContent=`Project ${i+1}`;
@@ -50,7 +60,7 @@ projects.forEach((p,i)=>{
       if(!window.L){status.textContent="Map could not load. Check your internet connection.";return;}
       if(!map){
         map=L.map(container,{scrollWheelZoom:false});
-        L.tileLayer("https://server.arcgisonline.com/ArcGIS/rest/services/World_Topo_Map/MapServer/tile/{z}/{y}/{x}",{attribution:"Tiles © Esri",maxZoom:19}).addTo(map);
+        L.tileLayer("https://server.arcgisonline.com/ArcGIS/rest/services/World_Topo_Map/MapServer/tile/{z}/{y}/{x}",{attribution:"Tiles \u00a9 Esri",maxZoom:19}).addTo(map);
         const markers=p.points.map(point=>{const popup=document.createElement("div");popup.textContent=point.popup;return L.marker([point.lat,point.lng]).bindPopup(popup).addTo(map);});
         map.fitBounds(L.featureGroup(markers).getBounds(),{padding:[24,24],maxZoom:13});
       }
